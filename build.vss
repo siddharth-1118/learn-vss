@@ -1,25 +1,65 @@
-note VSS Book Compiler
+note VSS Official Documentation Site Compiler
 
 make chapters becomes [
-    "01_introduction.md",
-    "02_basics.md",
-    "03_conditionals_loops.md",
-    "04_collections.md",
-    "05_tasks_closures.md",
-    "06_stdlib.md",
-    "07_ecosystem.md",
-    "08_input.md"
+    "01_welcome.md",
+    "02_philosophy.md",
+    "03_architecture.md",
+    "04_installation.md",
+    "05_verification.md",
+    "06_first_program.md",
+    "07_first_project.md",
+    "08_variables_constants.md",
+    "09_primitive_types.md",
+    "10_collections.md",
+    "11_arithmetic_operators.md",
+    "12_comparison_logical_operators.md",
+    "13_conditionals.md",
+    "14_loops_iteration.md",
+    "15_tasks_closures.md",
+    "16_error_handling.md",
+    "17_modules_namespaces.md",
+    "18_package_manager.md",
+    "19_web_server.md",
+    "20_sqlite_database.md",
+    "21_http_client.md",
+    "22_filesystem.md",
+    "23_json_handling.md",
+    "24_cryptography.md",
+    "25_system_builtins_input.md",
+    "26_cli_reference.md",
+    "27_web_tutorials.md",
+    "28_compiler_internals.md"
 ]
 
 make titles becomes [
-    "1. Introduction & Install",
-    "2. Variables & Types",
-    "3. Branching & Loops",
-    "4. Lists & Maps",
-    "5. Tasks & Closures",
-    "6. Standard Library",
-    "7. Package Ecosystem",
-    "8. User & System Input"
+    "1. Welcome to VSS",
+    "2. Philosophy of VSS",
+    "3. Architecture Overview",
+    "4. Installing VSS",
+    "5. Verifying Installation",
+    "6. Your First Program",
+    "7. Creating Your First Project",
+    "8. Variables & Constants",
+    "9. Primitive Types",
+    "10. Collections (Lists & Maps)",
+    "11. Arithmetic Operators",
+    "12. Comparison Operators",
+    "13. Conditional Branching",
+    "14. Loops & Iteration",
+    "15. Tasks & Closures",
+    "16. Error Handling",
+    "17. Modules & Namespaces",
+    "18. Package Manager",
+    "19. Native Web Server",
+    "20. SQLite Database",
+    "21. Native HTTP Client",
+    "22. Filesystem Module",
+    "23. JSON Handling",
+    "24. Cryptography",
+    "25. System Builtins & Input",
+    "26. CLI Command Reference",
+    "27. Real-World Web Projects",
+    "28. Compiler & VM Internals"
 ]
 
 task parse_markdown needs md_content
@@ -180,6 +220,7 @@ task wrap_layout needs title, sidebar, content, prev_link, next_link
     layout becomes layout + "</div></main></body></html>"
     send layout
 finish
+
 
 grab filesystem
 filesystem.create_directory("docs")
