@@ -1,30 +1,5 @@
-<!DOCTYPE html><html><head><meta charset='UTF-8'><title>6. Standard Library - The VSS Book</title><link rel='stylesheet' href='style.css'><link rel='icon' type='image/x-icon' href='favicon.ico'><link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap' rel='stylesheet'></head><body><div class='sidebar'><div class='logo-container'><div class='logo'>V</div><div class='logo-text'>VSS Book</div></div><nav class='nav-links'><a href='chapter_0.html' class='nav-link '>1. Introduction & Install</a><a href='chapter_1.html' class='nav-link '>2. Variables & Types</a><a href='chapter_2.html' class='nav-link '>3. Branching & Loops</a><a href='chapter_3.html' class='nav-link '>4. Lists & Maps</a><a href='chapter_4.html' class='nav-link '>5. Tasks & Closures</a><a href='chapter_5.html' class='nav-link active'>6. Standard Library</a><a href='chapter_6.html' class='nav-link '>7. Package Ecosystem</a><a href='chapter_7.html' class='nav-link '>8. User & System Input</a></nav><div class='version-text'>VSS Language v3.0.0</div></div><main><div class='content-card'><h1>Standard Library Modules</h1><p>VSS includes built-in modules for managing files, strings, SQLite databases, and HTTP requests. Use the `grab` statement to load them.</p><h2>File System (`grab filesystem`)</h2><p>Manage files and directories:</p><pre><code>grab filesystem
-
-make path becomes "test.txt"
-filesystem.write_file(path, "Hello VSS File System!")
-when filesystem.exists_file(path)
-make content becomes filesystem.read_file(path)
-say content
-filesystem.delete_file(path)
-finish
-</code></pre><h2>String Processing (`grab string`)</h2><p>Perform string utilities:</p><pre><code>grab string
-
-make text becomes "  VSS programming language  "
-make clean becomes string.trim(text)
-make upper becomes string.upper(clean)
-say upper
-</code></pre><h2>JSON Utility (`grab json`)</h2><p>Parse and serialize JSON strings:</p><pre><code>grab json
-
-make raw_json becomes "{\"id\": 101, \"active\": true}"
-make parsed_map becomes json.parse(raw_json)
-say parsed_map field "id"
-</code></pre><h2>HTTP Client & Server (`grab http`, `grab web`)</h2><p>Make API calls or run web servers:</p><pre><code>grab http
-grab web
-
-note Make API Call
-make response becomes http.get("https://api.github.com")
-
-note Start Web Server
-web.route("/", { req -> send "Welcome!" })
-web.serve(8080)
+<!DOCTYPE html><html><head><meta charset='UTF-8'><title>6. Your First Program - The VSS Book</title><link rel='stylesheet' href='style.css'><link rel='icon' type='image/x-icon' href='favicon.ico'><link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap' rel='stylesheet'></head><body><div class='sidebar'><div class='logo-container'><div class='logo'>V</div><div class='logo-text'>VSS Book</div></div><nav class='nav-links'><a href='chapter_0.html' class='nav-link '>1. Welcome to VSS</a><a href='chapter_1.html' class='nav-link '>2. Philosophy of VSS</a><a href='chapter_2.html' class='nav-link '>3. Architecture Overview</a><a href='chapter_3.html' class='nav-link '>4. Installing VSS</a><a href='chapter_4.html' class='nav-link '>5. Verifying Installation</a><a href='chapter_5.html' class='nav-link active'>6. Your First Program</a><a href='chapter_6.html' class='nav-link '>7. Creating Your First Project</a><a href='chapter_7.html' class='nav-link '>8. Variables & Constants</a><a href='chapter_8.html' class='nav-link '>9. Primitive Types</a><a href='chapter_9.html' class='nav-link '>10. Collections (Lists & Maps)</a><a href='chapter_10.html' class='nav-link '>11. Arithmetic Operators</a><a href='chapter_11.html' class='nav-link '>12. Comparison Operators</a><a href='chapter_12.html' class='nav-link '>13. Conditional Branching</a><a href='chapter_13.html' class='nav-link '>14. Loops & Iteration</a><a href='chapter_14.html' class='nav-link '>15. Tasks & Closures</a><a href='chapter_15.html' class='nav-link '>16. Error Handling</a><a href='chapter_16.html' class='nav-link '>17. Modules & Namespaces</a><a href='chapter_17.html' class='nav-link '>18. Package Manager</a><a href='chapter_18.html' class='nav-link '>19. Native Web Server</a><a href='chapter_19.html' class='nav-link '>20. SQLite Database</a><a href='chapter_20.html' class='nav-link '>21. Native HTTP Client</a><a href='chapter_21.html' class='nav-link '>22. Filesystem Module</a><a href='chapter_22.html' class='nav-link '>23. JSON Handling</a><a href='chapter_23.html' class='nav-link '>24. Cryptography</a><a href='chapter_24.html' class='nav-link '>25. System Builtins & Input</a><a href='chapter_25.html' class='nav-link '>26. CLI Command Reference</a><a href='chapter_26.html' class='nav-link '>27. Real-World Web Projects</a><a href='chapter_27.html' class='nav-link '>28. Compiler & VM Internals</a></nav><div class='version-text'>VSS Language v3.0.0</div></div><main><div class='content-card'><h2>Chapter 6: Your First VSS Program</h2><h3>1. What is it?</h3><p>Writing your first program in VSS demonstrates basic execution, file creation, and output printing.</p><h3>2. Creating the Source File</h3><p>Create a new file named `hello.vss` in your text editor:</p><pre><code>note My first official VSS program
+say "Hello, World! Welcome to VSS Version 3."
+</code></pre><h3>3. Explaining Every Line</h3><ul><li>`note`: Declares a single-line comment. The compiler skips line comments.</li><li>`say`: The native keyword to print expressions or strings to stdout.</li><li>`"Hello, World!..."`: A literal String value.</li></ul><h3>4. Running the Program</h3><p>Execute the file from your terminal:</p><pre><code>vss hello.vss
+</code></pre><p>Expected Output:</p><pre><code>Hello, World! Welcome to VSS Version 3.
 </code></pre><div class='pagination'><a href='chapter_4.html' class='btn-prev'>← Previous</a><a href='chapter_6.html' class='btn-next'>Next →</a></div></div></main></body></html>
