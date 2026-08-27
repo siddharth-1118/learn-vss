@@ -1,12 +1,13 @@
 note VSS Official Documentation Site Compiler
 
 make chapters becomes [
+    "00_version_history.md",
     "01_welcome.md",
     "02_philosophy.md",
     "03_architecture.md",
     "04_installation.md",
     "05_verification.md",
-    "06_first_program.md",
+    "06_input_output.md",
     "07_first_project.md",
     "08_variables_constants.md",
     "09_primitive_types.md",
@@ -32,12 +33,13 @@ make chapters becomes [
 ]
 
 make titles becomes [
+    "0. Version History (V1 - V3)",
     "1. Welcome to VSS",
     "2. Philosophy of VSS",
     "3. Architecture Overview",
     "4. Installing VSS",
     "5. Verifying Installation",
-    "6. Your First Program",
+    "6. Input and Output",
     "7. Creating Your First Project",
     "8. Variables & Constants",
     "9. Primitive Types",
@@ -220,7 +222,6 @@ task wrap_layout needs title, sidebar, content, prev_link, next_link
     layout becomes layout + "</div></main></body></html>"
     send layout
 finish
-
 
 grab filesystem
 filesystem.create_directory("docs")
