@@ -1,0 +1,188 @@
+note VSS Book Compiler
+
+make chapters becomes [
+    "01_introduction.md",
+    "02_basics.md",
+    "03_conditionals_loops.md",
+    "04_collections.md",
+    "05_tasks_closures.md",
+    "06_stdlib.md",
+    "07_ecosystem.md"
+]
+
+make titles becomes [
+    "1. Introduction & Install",
+    "2. Variables & Types",
+    "3. Branching & Loops",
+    "4. Lists & Maps",
+    "5. Tasks & Closures",
+    "6. Standard Library",
+    "7. Package Ecosystem"
+]
+
+task parse_markdown needs md_content
+    grab string
+    make html becomes ""
+    make lines becomes string.split(md_content, "\n")
+    make sz becomes __size(lines)
+    make i becomes 0
+    make in_code_block becomes no
+    make in_list becomes no
+    
+    during i below sz
+        make line becomes string.trim(lines item i)
+        make line_len becomes string.length(line)
+        
+        make is_code_toggle becomes no
+        when line_len at_least 3
+            make start_three becomes string.substring(line, 0, 3)
+            when start_three same_as "```"
+                is_code_toggle becomes yes
+            finish
+        finish
+        
+        when is_code_toggle same_as yes
+            when in_code_block same_as yes
+                html becomes html + "</code></pre>"
+                in_code_block becomes no
+            otherwise
+                html becomes html + "<pre><code class='bg-gray-800 text-gray-100 p-4 rounded block my-4 overflow-x-auto'>"
+                in_code_block becomes yes
+            finish
+        otherwise
+            when in_code_block same_as yes
+                html becomes html + line + "\n"
+            otherwise
+                make processed becomes no
+                
+                when line_len at_least 2
+                    make start_two becomes string.substring(line, 0, 2)
+                    when start_two same_as "# "
+                        make text becomes string.substring(line, 2, line_len)
+                        html becomes html + "<h1 class='text-3xl font-extrabold text-gray-900 mt-8 mb-4 border-b pb-2'>" + text + "</h1>"
+                        processed becomes yes
+                    finish
+                finish
+                
+                when processed same_as no
+                    when line_len at_least 3
+                        make start_three becomes string.substring(line, 0, 3)
+                        when start_three same_as "## "
+                            make text becomes string.substring(line, 3, line_len)
+                            html becomes html + "<h2 class='text-2xl font-bold text-gray-800 mt-6 mb-3'>" + text + "</h2>"
+                            processed becomes yes
+                        finish
+                    finish
+                finish
+
+                when processed same_as no
+                    when line_len at_least 4
+                        make start_four becomes string.substring(line, 0, 4)
+                        when start_four same_as "### "
+                            make text becomes string.substring(line, 4, line_len)
+                            html becomes html + "<h3 class='text-xl font-semibold text-gray-700 mt-4 mb-2'>" + text + "</h3>"
+                            processed becomes yes
+                        finish
+                    finish
+                finish
+                
+                when processed same_as no
+                    when line_len at_least 2
+                        make start_two becomes string.substring(line, 0, 2)
+                        when start_two same_as "- "
+                            make text becomes string.substring(line, 2, line_len)
+                            when in_list same_as no
+                                html becomes html + "<ul class='list-disc pl-6 my-4 space-y-2'>"
+                                in_list becomes yes
+                            finish
+                            html becomes html + "<li>" + text + "</li>"
+                            processed becomes yes
+                        finish
+                    finish
+                finish
+                
+                when processed same_as no
+                    when in_list same_as yes
+                        html becomes html + "</ul>"
+                        in_list becomes no
+                    finish
+                    
+                    when line_len above 0
+                        html becomes html + "<p class='text-gray-600 my-4 leading-relaxed'>" + line + "</p>"
+                    finish
+                finish
+            finish
+        finish
+        i becomes i + 1
+    finish
+    
+    when in_list same_as yes
+        html becomes html + "</ul>"
+    finish
+    
+    send html
+finish
+
+task flen_minus needs len, dec
+    send len + -dec
+finish
+
+task generate_sidebar needs active_index
+    make sidebar becomes "<div class='w-64 bg-white border-r min-h-screen p-6 space-y-4'>"
+    sidebar becomes sidebar + "<div class='text-2xl font-black text-green-600 mb-8'>VSS Book</div>"
+    sidebar becomes sidebar + "<nav class='space-y-1'>"
+    
+    make len becomes __size(chapters)
+    make i becomes 0
+    during i below len
+        make title becomes titles item i
+        make link_url becomes "chapter_" + i + ".html"
+        
+        sidebar becomes sidebar + "<a href='" + link_url + "' class='block px-4 py-2 rounded-lg text-sm font-medium "
+        when i same_as active_index
+            sidebar becomes sidebar + "bg-green-50 text-green-700 font-semibold border-l-4 border-green-500"
+        otherwise
+            sidebar becomes sidebar + "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        finish
+        sidebar becomes sidebar + "'>" + title + "</a>"
+        i becomes i + 1
+    finish
+    
+    sidebar becomes sidebar + "</nav></div>"
+    send sidebar
+finish
+
+task wrap_layout needs title, sidebar, content
+    make layout becomes "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + title + " - The VSS Book</title>"
+    layout becomes layout + "<script src='https://cdn.tailwindcss.com'></script>"
+    layout becomes layout + "</head><body class='bg-gray-50 text-gray-800 flex min-h-screen'>"
+    layout becomes layout + sidebar
+    layout becomes layout + "<main class='flex-1 p-12 max-w-4xl'><div class='bg-white p-8 rounded-xl shadow-sm border border-gray-100'>"
+    layout becomes layout + content
+    layout becomes layout + "</div></main></body></html>"
+    send layout
+finish
+
+grab filesystem
+filesystem.create_directory("docs")
+
+make len becomes __size(chapters)
+make i becomes 0
+during i below len
+    make filename becomes chapters item i
+    make title becomes titles item i
+    
+    say "Compiling " + filename + "..."
+    make md_content becomes filesystem.read_file("chapters/" + filename)
+    make html_body becomes parse_markdown(md_content)
+    make sidebar becomes generate_sidebar(i)
+    make page_html becomes wrap_layout(title, sidebar, html_body)
+    
+    filesystem.write_file("docs/chapter_" + i + ".html", page_html)
+    i becomes i + 1
+finish
+
+make redirect becomes "<!DOCTYPE html><html><head><meta http-equiv='refresh' content='0; url=chapter_0.html'></head></html>"
+filesystem.write_file("docs/index.html", redirect)
+filesystem.write_file("index.html", redirect)
+say "Build complete!"
