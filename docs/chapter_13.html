@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><meta charset='UTF-8'><title>14. Loops & Iteration - The VSS Book</title><link rel='stylesheet' href='style.css'><link rel='icon' type='image/x-icon' href='favicon.ico'><link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap' rel='stylesheet'></head><body><div class='sidebar'><div class='logo-container'><div class='logo'>V</div><div class='logo-text'>VSS Book</div></div><nav class='nav-links'><a href='chapter_0.html' class='nav-link '>1. Welcome to VSS</a><a href='chapter_1.html' class='nav-link '>2. Philosophy of VSS</a><a href='chapter_2.html' class='nav-link '>3. Architecture Overview</a><a href='chapter_3.html' class='nav-link '>4. Installing VSS</a><a href='chapter_4.html' class='nav-link '>5. Verifying Installation</a><a href='chapter_5.html' class='nav-link '>6. Your First Program</a><a href='chapter_6.html' class='nav-link '>7. Creating Your First Project</a><a href='chapter_7.html' class='nav-link '>8. Variables & Constants</a><a href='chapter_8.html' class='nav-link '>9. Primitive Types</a><a href='chapter_9.html' class='nav-link '>10. Collections (Lists & Maps)</a><a href='chapter_10.html' class='nav-link '>11. Arithmetic Operators</a><a href='chapter_11.html' class='nav-link '>12. Comparison Operators</a><a href='chapter_12.html' class='nav-link '>13. Conditional Branching</a><a href='chapter_13.html' class='nav-link active'>14. Loops & Iteration</a><a href='chapter_14.html' class='nav-link '>15. Tasks & Closures</a><a href='chapter_15.html' class='nav-link '>16. Error Handling</a><a href='chapter_16.html' class='nav-link '>17. Modules & Namespaces</a><a href='chapter_17.html' class='nav-link '>18. Package Manager</a><a href='chapter_18.html' class='nav-link '>19. Native Web Server</a><a href='chapter_19.html' class='nav-link '>20. SQLite Database</a><a href='chapter_20.html' class='nav-link '>21. Native HTTP Client</a><a href='chapter_21.html' class='nav-link '>22. Filesystem Module</a><a href='chapter_22.html' class='nav-link '>23. JSON Handling</a><a href='chapter_23.html' class='nav-link '>24. Cryptography</a><a href='chapter_24.html' class='nav-link '>25. System Builtins & Input</a><a href='chapter_25.html' class='nav-link '>26. CLI Command Reference</a><a href='chapter_26.html' class='nav-link '>27. Real-World Web Projects</a><a href='chapter_27.html' class='nav-link '>28. Compiler & VM Internals</a></nav><div class='version-text'>VSS Language v3.0.0</div></div><main><div class='content-card'><h1>PART 6 — LOOPS AND ITERATION</h1><h2>Chapter 14: Loops and Iteration</h2><h3>1. What is it?</h3><p>Loops repeat a block of code multiple times until a condition changes or an iteration finishes.</p><h3>2. Conditional Loops (`during...finish`)</h3><pre><code>make counter becomes 1
+
+during counter at_most 3
+say "Iteration: " + counter
+counter becomes counter + 1
+finish
+</code></pre><h3>3. Fixed Repetition (`repeat N times`)</h3><pre><code>repeat 3 times
+say "Ping server..."
+finish
+</code></pre><h3>4. Collection Iteration (`repeat each item in list`)</h3><pre><code>make servers becomes ["Server-A", "Server-B", "Server-C"]
+
+repeat each server in servers
+say "Connecting to " + server
+finish
+</code></pre><h3>5. Loop Control (`leave` and `skip`)</h3><ul><li>`leave`: Exits the current loop immediately (break).</li><li>`skip`: Skips the rest of the current iteration and continues to the next (continue).</li></ul><pre><code>make i becomes 0
+during i below 10
+i becomes i + 1
+when i same_as 3
+skip
+finish
+when i same_as 7
+leave
+finish
+say i
+finish
+</code></pre><div class='pagination'><a href='chapter_12.html' class='btn-prev'>← Previous</a><a href='chapter_14.html' class='btn-next'>Next →</a></div></div></main></body></html>
