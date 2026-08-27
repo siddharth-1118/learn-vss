@@ -48,7 +48,7 @@ task parse_markdown needs md_content
                 html becomes html + "</code></pre>"
                 in_code_block becomes no
             otherwise
-                html becomes html + "<pre><code class='bg-slate-900 text-slate-100 p-5 rounded-xl block my-6 overflow-x-auto border-l-4 border-emerald-500 font-mono text-sm leading-relaxed shadow-sm'>"
+                html becomes html + "<pre><code>"
                 in_code_block becomes yes
             finish
         otherwise
@@ -61,7 +61,7 @@ task parse_markdown needs md_content
                     make start_two becomes string.substring(line, 0, 2)
                     when start_two same_as "# "
                         make text becomes string.substring(line, 2, line_len)
-                        html becomes html + "<h1 class='text-4xl font-extrabold text-slate-900 mt-10 mb-6 border-b border-slate-100 pb-4 tracking-tight'>" + text + "</h1>"
+                        html becomes html + "<h1>" + text + "</h1>"
                         processed becomes yes
                     finish
                 finish
@@ -71,7 +71,7 @@ task parse_markdown needs md_content
                         make start_three becomes string.substring(line, 0, 3)
                         when start_three same_as "## "
                             make text becomes string.substring(line, 3, line_len)
-                            html becomes html + "<h2 class='text-2xl font-bold text-slate-800 mt-8 mb-4 tracking-tight'>" + text + "</h2>"
+                            html becomes html + "<h2>" + text + "</h2>"
                             processed becomes yes
                         finish
                     finish
@@ -82,7 +82,7 @@ task parse_markdown needs md_content
                         make start_four becomes string.substring(line, 0, 4)
                         when start_four same_as "### "
                             make text becomes string.substring(line, 4, line_len)
-                            html becomes html + "<h3 class='text-xl font-semibold text-slate-700 mt-6 mb-3 tracking-tight'>" + text + "</h3>"
+                            html becomes html + "<h3>" + text + "</h3>"
                             processed becomes yes
                         finish
                     finish
@@ -94,7 +94,7 @@ task parse_markdown needs md_content
                         when start_two same_as "- "
                             make text becomes string.substring(line, 2, line_len)
                             when in_list same_as no
-                                html becomes html + "<ul class='list-disc pl-6 my-5 space-y-2.5 text-slate-600'>"
+                                html becomes html + "<ul>"
                                 in_list becomes yes
                             finish
                             html becomes html + "<li>" + text + "</li>"
@@ -110,7 +110,7 @@ task parse_markdown needs md_content
                     finish
                     
                     when line_len above 0
-                        html becomes html + "<p class='text-slate-600 my-5 leading-relaxed text-[15px] font-normal'>" + line + "</p>"
+                        html becomes html + "<p>" + line + "</p>"
                     finish
                 finish
             finish
@@ -126,13 +126,12 @@ task parse_markdown needs md_content
 finish
 
 task generate_sidebar needs active_index
-    make sidebar becomes "<div class='w-72 bg-white border-r border-slate-100 min-h-screen p-8 flex flex-col justify-between shadow-sm'>"
-    sidebar becomes sidebar + "<div>"
-    sidebar becomes sidebar + "<div class='flex items-center gap-3 px-2 mb-10'>"
-    sidebar becomes sidebar + "<div class='w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-black text-white text-lg shadow-sm shadow-emerald-500/20'>V</div>"
-    sidebar becomes sidebar + "<div class='text-xl font-bold tracking-tight text-slate-800'>VSS Book</div>"
+    make sidebar becomes "<div class='sidebar'>"
+    sidebar becomes sidebar + "<div class='logo-container'>"
+    sidebar becomes sidebar + "<div class='logo'>V</div>"
+    sidebar becomes sidebar + "<div class='logo-text'>VSS Book</div>"
     sidebar becomes sidebar + "</div>"
-    sidebar becomes sidebar + "<nav class='space-y-1.5'>"
+    sidebar becomes sidebar + "<nav class='nav-links'>"
     
     make len becomes __size(chapters)
     make i becomes 0
@@ -140,41 +139,39 @@ task generate_sidebar needs active_index
         make title becomes titles item i
         make link_url becomes "chapter_" + i + ".html"
         
-        sidebar becomes sidebar + "<a href='" + link_url + "' class='block px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 "
+        sidebar becomes sidebar + "<a href='" + link_url + "' class='nav-link "
         when i same_as active_index
-            sidebar becomes sidebar + "bg-emerald-50 text-emerald-700 font-semibold border-l-4 border-emerald-500 pl-3"
-        otherwise
-            sidebar becomes sidebar + "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+            sidebar becomes sidebar + "active"
         finish
         sidebar becomes sidebar + "'>" + title + "</a>"
         i becomes i + 1
     finish
     
-    sidebar becomes sidebar + "</nav></div>"
-    sidebar becomes sidebar + "<div class='pt-6 border-t border-slate-100'><div class='text-xs text-slate-400 font-medium'>VSS Language v3.0.0</div></div></div>"
+    sidebar becomes sidebar + "</nav>"
+    sidebar becomes sidebar + "<div class='version-text'>VSS Language v3.0.0</div></div>"
     send sidebar
 finish
 
 task wrap_layout needs title, sidebar, content, prev_link, next_link
     make layout becomes "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + title + " - The VSS Book</title>"
-    layout becomes layout + "<script src='https://cdn.tailwindcss.com'></script>"
+    layout becomes layout + "<link rel='stylesheet' href='style.css'>"
+    layout becomes layout + "<link rel='icon' type='image/x-icon' href='favicon.ico'>"
     layout becomes layout + "<link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap' rel='stylesheet'>"
-    layout becomes layout + "<style>body { font-family: 'Inter', sans-serif; }</style>"
-    layout becomes layout + "</head><body class='bg-slate-50/50 text-slate-700 flex min-h-screen'>"
+    layout becomes layout + "</head><body>"
     layout becomes layout + sidebar
-    layout becomes layout + "<main class='flex-1 p-16 max-w-5xl overflow-y-auto'><div class='bg-white p-12 rounded-2xl shadow-sm border border-slate-100/80'>"
+    layout becomes layout + "<main><div class='content-card'>"
     layout becomes layout + content
     
     note Bottom Navigation
-    layout becomes layout + "<div class='mt-14 pt-8 border-t border-slate-100/80 flex justify-between items-center'>"
+    layout becomes layout + "<div class='pagination'>"
     when prev_link not_same_as ""
-        layout becomes layout + "<a href='" + prev_link + "' class='px-4.5 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200'>← Previous</a>"
+        layout becomes layout + "<a href='" + prev_link + "' class='btn-prev'>← Previous</a>"
     otherwise
         layout becomes layout + "<div></div>"
     finish
     
     when next_link not_same_as ""
-        layout becomes layout + "<a href='" + next_link + "' class='px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all duration-200 shadow-md shadow-emerald-600/10'>Next →</a>"
+        layout becomes layout + "<a href='" + next_link + "' class='btn-next'>Next →</a>"
     otherwise
         layout becomes layout + "<div></div>"
     finish
