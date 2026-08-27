@@ -1,19 +1,29 @@
-<!DOCTYPE html><html><head><meta charset='UTF-8'><title>3. Branching & Loops - The VSS Book</title><link rel='stylesheet' href='style.css'><link rel='icon' type='image/x-icon' href='favicon.ico'><link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap' rel='stylesheet'></head><body><div class='sidebar'><div class='logo-container'><div class='logo'>V</div><div class='logo-text'>VSS Book</div></div><nav class='nav-links'><a href='chapter_0.html' class='nav-link '>1. Introduction & Install</a><a href='chapter_1.html' class='nav-link '>2. Variables & Types</a><a href='chapter_2.html' class='nav-link active'>3. Branching & Loops</a><a href='chapter_3.html' class='nav-link '>4. Lists & Maps</a><a href='chapter_4.html' class='nav-link '>5. Tasks & Closures</a><a href='chapter_5.html' class='nav-link '>6. Standard Library</a><a href='chapter_6.html' class='nav-link '>7. Package Ecosystem</a><a href='chapter_7.html' class='nav-link '>8. User & System Input</a></nav><div class='version-text'>VSS Language v3.0.0</div></div><main><div class='content-card'><h1>Conditionals and Loops</h1><p>VSS provides clean flow control structures using simple keywords.</p><h2>Comparative Operators</h2><p>Instead of using symbols like `<` or `>`, VSS uses readable word-based comparison operators:</p><ul><li>`below`: Less than (`<`)</li><li>`above`: Greater than (`>`)</li><li>`at_least`: Greater than or equal to (`>=`)</li><li>`at_most`: Less than or equal to (`<=`)</li><li>`same_as`: Equal to (`==`)</li><li>`not_same_as`: Not equal to (`!=`)</li></ul><h2>Conditionals (when...finish)</h2><p>VSS uses `when` blocks to handle conditional branching:</p><pre><code>make age becomes 20
-when age at_least 18
-say "You are an adult."
-otherwise
-say "You are a minor."
-finish
-</code></pre><h2>Conditional Loops (during...finish)</h2><p>A conditional loop runs as long as a statement evaluates to `yes`. Note that inside the block, modifying variables does not use `make`:</p><pre><code>make count becomes 1
-during count at_most 5
-say "Count is: " + count
-count becomes count + 1
-finish
-</code></pre><h2>Sized Loops (repeat)</h2><p>If you just need to repeat an action a fixed number of times:</p><pre><code>repeat 3 times
-say "Running loop..."
-finish
-</code></pre><h2>Iterator Loops</h2><p>To loop through items in lists:</p><pre><code>make names becomes ["Alice", "Bob", "Charlie"]
-repeat each name in names
-say "Hello, " + name
-finish
-</code></pre><div class='pagination'><a href='chapter_1.html' class='btn-prev'>← Previous</a><a href='chapter_3.html' class='btn-next'>Next →</a></div></div></main></body></html>
+<!DOCTYPE html><html><head><meta charset='UTF-8'><title>3. Architecture Overview - The VSS Book</title><link rel='stylesheet' href='style.css'><link rel='icon' type='image/x-icon' href='favicon.ico'><link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap' rel='stylesheet'></head><body><div class='sidebar'><div class='logo-container'><div class='logo'>V</div><div class='logo-text'>VSS Book</div></div><nav class='nav-links'><a href='chapter_0.html' class='nav-link '>1. Welcome to VSS</a><a href='chapter_1.html' class='nav-link '>2. Philosophy of VSS</a><a href='chapter_2.html' class='nav-link active'>3. Architecture Overview</a><a href='chapter_3.html' class='nav-link '>4. Installing VSS</a><a href='chapter_4.html' class='nav-link '>5. Verifying Installation</a><a href='chapter_5.html' class='nav-link '>6. Your First Program</a><a href='chapter_6.html' class='nav-link '>7. Creating Your First Project</a><a href='chapter_7.html' class='nav-link '>8. Variables & Constants</a><a href='chapter_8.html' class='nav-link '>9. Primitive Types</a><a href='chapter_9.html' class='nav-link '>10. Collections (Lists & Maps)</a><a href='chapter_10.html' class='nav-link '>11. Arithmetic Operators</a><a href='chapter_11.html' class='nav-link '>12. Comparison Operators</a><a href='chapter_12.html' class='nav-link '>13. Conditional Branching</a><a href='chapter_13.html' class='nav-link '>14. Loops & Iteration</a><a href='chapter_14.html' class='nav-link '>15. Tasks & Closures</a><a href='chapter_15.html' class='nav-link '>16. Error Handling</a><a href='chapter_16.html' class='nav-link '>17. Modules & Namespaces</a><a href='chapter_17.html' class='nav-link '>18. Package Manager</a><a href='chapter_18.html' class='nav-link '>19. Native Web Server</a><a href='chapter_19.html' class='nav-link '>20. SQLite Database</a><a href='chapter_20.html' class='nav-link '>21. Native HTTP Client</a><a href='chapter_21.html' class='nav-link '>22. Filesystem Module</a><a href='chapter_22.html' class='nav-link '>23. JSON Handling</a><a href='chapter_23.html' class='nav-link '>24. Cryptography</a><a href='chapter_24.html' class='nav-link '>25. System Builtins & Input</a><a href='chapter_25.html' class='nav-link '>26. CLI Command Reference</a><a href='chapter_26.html' class='nav-link '>27. Real-World Web Projects</a><a href='chapter_27.html' class='nav-link '>28. Compiler & VM Internals</a></nav><div class='version-text'>VSS Language v3.0.0</div></div><main><div class='content-card'><h2>Chapter 3: VSS Architecture Overview</h2><h3>1. What is the VSS Architecture?</h3><p>VSS features a multi-stage compiled architecture designed in pure C for safety, speed, and cross-platform portability.</p><h3>2. Compiler & VM Pipeline Flow</h3><pre><code>+-------------------------------------------------------------------+
+|                        VSS Source Code (.vss)                     |
++-------------------------------------------------------------------+
+|
+v
++-------------------------------------------------------------------+
+|               Lexer (Tokenization / Scanner in lexer.c)           |
++-------------------------------------------------------------------+
+|
+v
++-------------------------------------------------------------------+
+|             Parser (Abstract Syntax Tree in parser.c)             |
++-------------------------------------------------------------------+
+|
+v
++-------------------------------------------------------------------+
+|         Bytecode Compiler (Instruction Generation compiler.c)     |
++-------------------------------------------------------------------+
+|
+v
++-------------------------------------------------------------------+
+|          Virtual Machine (Bytecode Execution Engine vm.c)         |
++-------------------------------------------------------------------+
+|
+v
++-------------------------------------------------------------------+
+|                Runtime Output & OS Interface Builtins             |
++-------------------------------------------------------------------+
+</code></pre><h3>3. Pipeline Component Descriptions</h3><p>1. **Lexer (`lexer.c`):** Scans raw text bytes and converts them into structured `VSS_Token` objects (`VSS_TOKEN_SAY`, `VSS_TOKEN_MAKE`, `VSS_TOKEN_BECOMES`, etc.).</p><p>2. **Parser (`parser.c`):** Analyzes the stream of tokens and constructs an Abstract Syntax Tree (AST) composed of `VSS_Stmt` and `VSS_Expr` nodes.</p><p>3. **Bytecode Compiler (`compiler.c`):** Traverses the AST and emits low-level VM opcodes (`VSS_OP_GET_GLOBAL`, `VSS_OP_CALL`, `VSS_OP_ADD`, `VSS_OP_JUMP_IF_FALSE`).</p><p>4. **Virtual Machine (`vm.c`):** A stack-based execution virtual machine written in C that interprets opcodes and handles Garbage Collection / Automatic Reference Counting (ARC).</p><div class='pagination'><a href='chapter_1.html' class='btn-prev'>← Previous</a><a href='chapter_3.html' class='btn-next'>Next →</a></div></div></main></body></html>
