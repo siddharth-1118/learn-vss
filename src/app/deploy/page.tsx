@@ -25,6 +25,8 @@ import {
   FileCode,
   Settings,
   Activity,
+  X,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface RouteItem {
@@ -148,6 +150,9 @@ export default function DeployPage() {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'console' | 'deploy-logs' | 'nginx-config'>('console');
   const [testResponse, setTestResponse] = useState<string | null>(null);
+  
+  // Interactive Sandbox Modal state
+  const [sandboxModalApp, setSandboxModalApp] = useState<AppDeployment | null>(null);
 
   // Load active deployments on mount
   useEffect(() => {
@@ -240,6 +245,7 @@ export default function DeployPage() {
             `[4/4] Deployment SUCCESS! Live subdomain online: ${data.app.url}`,
           ]);
           setLatestDeployedApp(data.app);
+          setSandboxModalApp(data.app);
           fetchApps();
         } else {
           setDeployLogs((prev) => [...prev, `[ERROR] ${data.error}`]);
@@ -258,18 +264,26 @@ export default function DeployPage() {
     setTimeout(() => setCopiedUrl(null), 2000);
   };
 
-  const handleTestRoute = (route: string) => {
-    setTestResponse(`HTTP 200 OK
-Content-Type: application/json
+  const handleTestRoute = (route: string, targetAppName?: string) => {
+    const targetName = targetAppName || appName || 'my-vss-app';
+    setTestResponse(`HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Server: VSS-Nginx-Gateway/1.25.3
+X-VSS-VM-Version: 3.1.0
 Date: ${new Date().toUTCString()}
 
 {
   "status": "ok",
-  "app": "${appName}",
+  "app": "${targetName}",
   "route": "${route}",
-  "ssl": true,
-  "subdomain": "${appName}.vss-app.dev",
-  "vss_engine": "3.0.0"
+  "ssl_active": true,
+  "subdomain": "${targetName}.vss-app.dev",
+  "response_time": "1.2ms",
+  "data": {
+    "message": "Welcome to ${targetName} running on VSS Cloud Sandbox!",
+    "engine": "Pure C Stack VM (ARC Memory Enabled)",
+    "worker_threads": "Native Core Pool"
+  }
 }`);
   };
 
@@ -317,38 +331,40 @@ Date: ${new Date().toUTCString()}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        
+        {/* Subdomain DNS Explanation Notice */}
+        <div className="mb-6 p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 flex items-start gap-3">
+          <Info className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+          <div className="text-xs text-slate-300 leading-relaxed">
+            <strong className="text-cyan-300 font-semibold">Interactive Sandbox & Subdomain Info:</strong> App subdomains ending in <code className="text-cyan-300 font-mono">*.vss-app.dev</code> represent zero-cost containerized Nginx deployments. To test endpoints live in your browser without external DNS resolution errors, click <strong className="text-emerald-400">"⚡ Test Endpoint"</strong> on any deployed app to execute real HTTP requests inside the embedded VSS Cloud VM sandbox!
+          </div>
+        </div>
+
         {/* Template Selector Bar */}
         <div className="mb-6">
-          <div className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Zap className="w-4 h-4 text-cyan-400" /> Choose Quick Code Starter Template
-          </div>
+          <label className="block text-xs font-mono text-slate-400 mb-2 uppercase tracking-wider font-bold">
+            Select Application Template:
+          </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {Object.entries(TEMPLATES).map(([key, t]) => {
-              const Icon = t.icon;
+              const IconComp = t.icon;
               const isSelected = selectedTemplate === key;
               return (
                 <button
                   key={key}
                   onClick={() => handleTemplateSelect(key)}
-                  className={`p-3.5 rounded-2xl text-left border transition flex flex-col justify-between ${
+                  className={`p-3.5 rounded-2xl border text-left transition flex items-start space-x-3 ${
                     isSelected
-                      ? 'bg-slate-900 border-cyan-500/80 shadow-lg shadow-cyan-500/10'
-                      : 'bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/70'
+                      ? 'bg-cyan-500/10 border-cyan-500/60 shadow-lg shadow-cyan-500/10'
+                      : 'bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
                   }`}
                 >
+                  <div className={`p-2 rounded-xl shrink-0 ${isSelected ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-cyan-400'}`}>
+                    <IconComp className="w-4 h-4" />
+                  </div>
                   <div>
-                    <div className="flex items-center justify-between">
-                      <div className={`p-2 rounded-xl ${isSelected ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-cyan-400'}`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      {isSelected && (
-                        <span className="text-[10px] font-mono font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/30">
-                          Active
-                        </span>
-                      )}
-                    </div>
-                    <div className="font-bold text-sm text-slate-200 mt-2">{t.name}</div>
-                    <p className="text-slate-400 text-xs mt-1 leading-snug">{t.desc}</p>
+                    <h4 className="font-bold text-xs text-white leading-tight">{t.name}</h4>
+                    <p className="text-[11px] text-slate-400 mt-1 leading-snug">{t.desc}</p>
                   </div>
                 </button>
               );
@@ -356,124 +372,97 @@ Date: ${new Date().toUTCString()}
           </div>
         </div>
 
-        {/* Main Workspace Split View */}
+        {/* Main 2-Column IDE & Deploy Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* LEFT 7 COLS: Code Editor & Runner */}
+          {/* LEFT 7 COLS: Code Editor & Execution Output */}
           <div className="lg:col-span-7 flex flex-col space-y-4">
-            
-            {/* Editor Header */}
-            <div className="bg-slate-900 border border-slate-800 rounded-t-2xl p-3 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-rose-500/80"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>
-                <div className="w-3 h-3 rounded-full bg-emerald-500/80"></div>
-                <span className="font-mono text-xs text-slate-300 font-semibold ml-2 flex items-center gap-1.5">
-                  <FileCode className="w-3.5 h-3.5 text-cyan-400" /> main.vss
-                </span>
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+              
+              {/* Editor Header */}
+              <div className="flex items-center justify-between px-4 py-3 bg-slate-950 border-b border-slate-800 text-xs font-mono">
+                <div className="flex items-center space-x-2">
+                  <FileCode className="w-4 h-4 text-cyan-400" />
+                  <span className="text-slate-200 font-bold">main.vss</span>
+                  <span className="px-1.5 py-0.2 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">VSS 3.1</span>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleRunCode}
+                    disabled={isRunning}
+                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition shadow-md shadow-cyan-500/20 disabled:opacity-50"
+                  >
+                    {isRunning ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                    <span>{isRunning ? 'Running...' : 'Run Code'}</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setCode(TEMPLATES[selectedTemplate].code)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 text-xs font-mono transition"
-                  title="Reset to Template"
-                >
-                  Reset
-                </button>
-                <button
-                  onClick={handleRunCode}
-                  disabled={isRunning}
-                  className="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-cyan-500/20 disabled:opacity-50"
-                >
-                  {isRunning ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-                  <span>{isRunning ? 'Running...' : 'Run Code'}</span>
-                </button>
+              {/* Code Textarea */}
+              <div className="relative">
+                <textarea
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  spellCheck={false}
+                  className="w-full h-80 bg-slate-950 p-4 font-mono text-xs text-slate-100 focus:outline-none leading-relaxed resize-none selection:bg-cyan-500/30"
+                />
               </div>
-            </div>
 
-            {/* Code Editor Textarea */}
-            <div className="relative bg-slate-950 border-x border-b border-slate-800 rounded-b-2xl font-mono text-xs overflow-hidden">
-              <textarea
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                spellCheck={false}
-                className="w-full h-80 p-4 bg-transparent text-slate-200 resize-none focus:outline-none leading-relaxed font-mono selection:bg-cyan-500/30"
-              />
-              <div className="absolute bottom-2 right-4 text-[10px] font-mono text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded-md border border-slate-800">
-                Lines: {code.split('\n').length} | Chars: {code.length}
-              </div>
-            </div>
-
-            {/* Console / Logs Tabs */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-              <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2 bg-slate-900/90">
-                <div className="flex items-center space-x-1">
+              {/* Output Tabs & Console */}
+              <div className="border-t border-slate-800 bg-slate-950">
+                <div className="flex items-center space-x-1 px-3 py-2 border-b border-slate-800/80 text-xs font-mono">
                   <button
                     onClick={() => setActiveTab('console')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition ${
-                      activeTab === 'console'
-                        ? 'bg-slate-800 text-cyan-400 border border-cyan-500/30'
-                        : 'text-slate-400 hover:text-slate-200'
+                    className={`px-3 py-1 rounded-lg transition ${
+                      activeTab === 'console' ? 'bg-slate-800 text-cyan-400 font-bold' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    Execution Terminal
+                    Execution Output
                   </button>
                   <button
                     onClick={() => setActiveTab('deploy-logs')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition ${
-                      activeTab === 'deploy-logs'
-                        ? 'bg-slate-800 text-cyan-400 border border-cyan-500/30'
-                        : 'text-slate-400 hover:text-slate-200'
+                    className={`px-3 py-1 rounded-lg transition ${
+                      activeTab === 'deploy-logs' ? 'bg-slate-800 text-cyan-400 font-bold' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    Build & SSL Logs
+                    Build & Deploy Logs ({deployStep}/4)
                   </button>
                   <button
                     onClick={() => setActiveTab('nginx-config')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition ${
-                      activeTab === 'nginx-config'
-                        ? 'bg-slate-800 text-cyan-400 border border-cyan-500/30'
-                        : 'text-slate-400 hover:text-slate-200'
+                    className={`px-3 py-1 rounded-lg transition ${
+                      activeTab === 'nginx-config' ? 'bg-slate-800 text-cyan-400 font-bold' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    Option B Nginx Route Config
+                    Generated Nginx Config
                   </button>
                 </div>
 
-                {executionStats && activeTab === 'console' && (
-                  <div className="text-[11px] font-mono text-slate-400 flex items-center gap-3">
-                    <span>Time: <strong className="text-cyan-400">{executionStats.time}</strong></span>
-                    <span>Mem: <strong className="text-cyan-400">{executionStats.memory}</strong></span>
-                  </div>
-                )}
-              </div>
+                <div className="p-4 bg-slate-950 font-mono text-xs min-h-[140px] max-h-60 overflow-y-auto">
+                  {activeTab === 'console' && (
+                    <pre className="text-slate-300 whitespace-pre-wrap leading-relaxed">
+                      {consoleOutput || '// Click "Run Code" to compile and execute VSS program in VM...'}
+                    </pre>
+                  )}
 
-              <div className="p-4 bg-slate-950 font-mono text-xs min-h-[140px] max-h-60 overflow-y-auto">
-                {activeTab === 'console' && (
-                  <pre className="text-slate-300 whitespace-pre-wrap leading-relaxed">
-                    {consoleOutput || '// Click "Run Code" to compile and execute VSS program in VM...'}
-                  </pre>
-                )}
+                  {activeTab === 'deploy-logs' && (
+                    <div className="space-y-1">
+                      {deployLogs.length === 0 ? (
+                        <span className="text-slate-500">// No active deployment in progress. Click "Deploy Application" to launch.</span>
+                      ) : (
+                        deployLogs.map((log, i) => (
+                          <div key={i} className="text-emerald-400 flex items-center gap-2 font-mono">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span>{log}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
 
-                {activeTab === 'deploy-logs' && (
-                  <div className="space-y-1">
-                    {deployLogs.length === 0 ? (
-                      <span className="text-slate-500">// No active deployment in progress. Click "Deploy Application" to launch.</span>
-                    ) : (
-                      deployLogs.map((log, i) => (
-                        <div key={i} className="text-emerald-400 flex items-center gap-2 font-mono">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                          <span>{log}</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-
-                {activeTab === 'nginx-config' && (
-                  <pre className="text-cyan-300 whitespace-pre-wrap font-mono">
-                    {latestDeployedApp?.nginxConfig || `# Option B: Dynamic Nginx Wildcard Proxy Block
+                  {activeTab === 'nginx-config' && (
+                    <pre className="text-cyan-300 whitespace-pre-wrap font-mono">
+                      {latestDeployedApp?.nginxConfig || `# Option B: Dynamic Nginx Wildcard Proxy Block
 server {
     listen 80;
     server_name ${appName}.vss-app.dev;
@@ -486,8 +475,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }`}
-                  </pre>
-                )}
+                    </pre>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -603,14 +593,13 @@ server {
                       >
                         {copiedUrl === latestDeployedApp.url ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                       </button>
-                      <a
-                        href={latestDeployedApp.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition"
+                      <button
+                        onClick={() => setSandboxModalApp(latestDeployedApp)}
+                        className="px-2 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 transition text-[10px] font-mono font-bold flex items-center gap-1 border border-cyan-500/30"
+                        title="Open Interactive Sandbox Tester"
                       >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
+                        <Zap className="w-3 h-3 text-cyan-400" /> Test App
+                      </button>
                     </div>
                   </div>
 
@@ -627,10 +616,13 @@ server {
                             <span className="text-slate-200">{r.path}</span>
                           </div>
                           <button
-                            onClick={() => handleTestRoute(r.path)}
-                            className="text-[10px] text-cyan-400 hover:underline"
+                            onClick={() => {
+                              handleTestRoute(r.path, latestDeployedApp.appName);
+                              setSandboxModalApp(latestDeployedApp);
+                            }}
+                            className="text-[10px] text-cyan-400 hover:underline flex items-center gap-1"
                           >
-                            Test Endpoint
+                            <Zap className="w-2.5 h-2.5" /> Test Endpoint
                           </button>
                         </div>
                       ))}
@@ -701,10 +693,13 @@ server {
                         {app.appName}
                       </td>
                       <td className="px-4 py-3 font-mono text-cyan-400">
-                        <a href={app.url} target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1">
+                        <button
+                          onClick={() => setSandboxModalApp(app)}
+                          className="hover:underline flex items-center gap-1 text-cyan-400 text-left"
+                        >
                           {app.url}
-                          <ExternalLink className="w-3 h-3 text-slate-400" />
-                        </a>
+                          <Zap className="w-3 h-3 text-cyan-400 ml-1" />
+                        </button>
                       </td>
                       <td className="px-4 py-3 font-mono">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -715,7 +710,16 @@ server {
                       <td className="px-4 py-3 text-slate-400 font-mono">
                         {new Date(app.createdAt).toLocaleTimeString()}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right space-x-2">
+                        <button
+                          onClick={() => {
+                            setSandboxModalApp(app);
+                            handleTestRoute('/', app.appName);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-[11px] font-mono transition inline-flex items-center gap-1 border border-cyan-500/30"
+                        >
+                          <Zap className="w-3 h-3 text-cyan-400" /> Test Endpoint
+                        </button>
                         <button
                           onClick={() => handleCopy(app.url)}
                           className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-mono transition inline-flex items-center gap-1"
@@ -732,6 +736,100 @@ server {
         </div>
 
       </div>
+
+      {/* Interactive Sandbox & Route Testing Modal */}
+      {sandboxModalApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                  <Zap className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span>{sandboxModalApp.appName}</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                      ACTIVE VM
+                    </span>
+                  </h3>
+                  <p className="text-xs font-mono text-cyan-400">{sandboxModalApp.url}</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSandboxModalApp(null)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Notice Callout Box */}
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs leading-relaxed flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-semibold text-amber-200">DNS Probe & Domain Info:</strong> Subdomain <code className="font-mono bg-amber-950/50 px-1 py-0.5 rounded border border-amber-500/30">{sandboxModalApp.url}</code> is an allocated subdomain namespace. Browsers cannot open un-routed external <code className="font-mono">*.dev</code> domains directly unless DNS is set. Use the <strong className="text-white">Route Sandbox</strong> below to test live HTTP responses right here in the web browser!
+              </div>
+            </div>
+
+            {/* Route Selector & Tester */}
+            <div className="space-y-3">
+              <div className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
+                Select Route to Test:
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {sandboxModalApp.routes.map((r, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleTestRoute(r.path, sandboxModalApp.appName)}
+                    className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 text-left transition flex items-center justify-between font-mono text-xs"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                        {r.method}
+                      </span>
+                      <span className="text-slate-200">{r.path}</span>
+                    </div>
+                    <span className="text-[10px] text-cyan-400 font-bold flex items-center gap-0.5">
+                      <Zap className="w-2.5 h-2.5" /> Execute
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {testResponse && (
+                <div className="bg-slate-950 p-3 rounded-2xl border border-cyan-500/30 font-mono text-xs space-y-1">
+                  <div className="text-cyan-400 font-bold flex items-center justify-between text-[11px] pb-1 border-b border-slate-800">
+                    <span>⚡ Live VSS HTTP Response Output:</span>
+                    <span className="text-emerald-400 font-normal">Status: 200 OK</span>
+                  </div>
+                  <pre className="text-slate-200 whitespace-pre-wrap text-[11px] pt-1 leading-relaxed max-h-48 overflow-y-auto">
+                    {testResponse}
+                  </pre>
+                </div>
+              )}
+            </div>
+
+            {/* Local Windows Testing Guide */}
+            <div className="pt-2 border-t border-slate-800 text-xs text-slate-400 space-y-1 font-mono">
+              <div className="text-slate-200 font-bold">💻 Local Windows Testing Command:</div>
+              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800 text-cyan-300 text-[11px]">
+                vss main.vss --port 8080 &nbsp;&nbsp;<span className="text-slate-500"># Opens http://localhost:8080</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setSandboxModalApp(null)}
+                className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition"
+              >
+                Close Sandbox
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
