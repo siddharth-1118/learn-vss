@@ -19,8 +19,8 @@ const deployedAppsStore: VSSAppDeployment[] = [
   {
     id: 'app-rest-api-01',
     appName: 'vss-rest-api',
-    subdomain: 'api-demo.vss-app.dev',
-    url: 'https://api-demo.vss-app.dev',
+    subdomain: 'vss-rest-api.vss-app.dev',
+    url: 'https://learn-vss.vercel.app/app/vss-rest-api',
     status: 'active',
     createdAt: new Date(Date.now() - 3600000).toISOString(),
     memory: '14.2 MB',
@@ -37,7 +37,7 @@ RUN gcc -o vss.exe src/*.c -Iinclude -lws2_32
 CMD ["./vss.exe", "run", "app.vss"]`,
     nginxConfig: `server {
     listen 80;
-    server_name api-demo.vss-app.dev;
+    server_name vss-rest-api.vss-app.dev;
     location / {
         proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host $host;
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       .trim()
       .replace(/[^a-z0-9-]/g, '-');
     const subdomain = `${sanitizedName}.vss-app.dev`;
-    const url = `https://${subdomain}`;
+    const url = `https://learn-vss.vercel.app/app/${sanitizedName}`;
     const containerPort = Math.floor(8000 + Math.random() * 1000);
 
     // Dynamic Route Detection from VSS code
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       detectedRoutes.push({ method: 'GET', path: '/', description: 'Root VSS Handler' });
     }
 
-    const nginxConfig = `# Option B: Free Nginx Reverse Proxy Route for ${subdomain}
+    const nginxConfig = `# Option B: Nginx Reverse Proxy Block for ${subdomain}
 server {
     listen 80;
     server_name ${subdomain};

@@ -225,7 +225,7 @@ export default function DeployPage() {
       setDeployStep(3);
       setDeployLogs((prev) => [
         ...prev,
-        `[3/4] Requesting zero-cost SSL wildcard certificate (*.vss-app.dev)...`,
+        `[3/4] Issuing active live HTTPS web route (https://learn-vss.vercel.app/app/${appName})...`,
       ]);
     }, 1600);
 
@@ -242,10 +242,9 @@ export default function DeployPage() {
         if (data.success) {
           setDeployLogs((prev) => [
             ...prev,
-            `[4/4] Deployment SUCCESS! Live subdomain online: ${data.app.url}`,
+            `[4/4] Deployment SUCCESS! Live URL ready: ${data.app.url}`,
           ]);
           setLatestDeployedApp(data.app);
-          setSandboxModalApp(data.app);
           fetchApps();
         } else {
           setDeployLogs((prev) => [...prev, `[ERROR] ${data.error}`]);
@@ -277,15 +276,18 @@ Date: ${new Date().toUTCString()}
   "app": "${targetName}",
   "route": "${route}",
   "ssl_active": true,
+  "live_url": "https://learn-vss.vercel.app/app/${targetName}",
   "subdomain": "${targetName}.vss-app.dev",
   "response_time": "1.2ms",
   "data": {
-    "message": "Welcome to ${targetName} running on VSS Cloud Sandbox!",
+    "message": "Welcome to ${targetName} running live on VSS Cloud!",
     "engine": "Pure C Stack VM (ARC Memory Enabled)",
     "worker_threads": "Native Core Pool"
   }
 }`);
   };
+
+  const liveEndpointUrl = `https://learn-vss.vercel.app/app/${appName || 'my-vss-app'}`;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-16">
@@ -296,7 +298,7 @@ Date: ${new Date().toUTCString()}
             <div>
               <div className="flex items-center space-x-2">
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  OPTION B • 100% FREE SUBDOMAIN PLATFORM
+                  OPTION B • 100% FREE LIVE DEPLOYMENTS
                 </span>
                 <span className="flex items-center text-xs font-mono text-emerald-400 gap-1">
                   <Shield className="w-3.5 h-3.5" /> $0 Hosting Cost
@@ -307,7 +309,7 @@ Date: ${new Date().toUTCString()}
                 VSS Cloud IDE & Free Deployment Engine
               </h1>
               <p className="text-slate-400 text-sm mt-1 max-w-2xl">
-                Build, test, and deploy full-stack VSS microservices & web applications. Automatically assigned an SSL subdomain with 0 domain fees.
+                Build, test, and deploy full-stack VSS microservices & web applications. Automatically assigned an active HTTPS link with 0 domain fees.
               </p>
             </div>
 
@@ -332,14 +334,6 @@ Date: ${new Date().toUTCString()}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         
-        {/* Subdomain DNS Explanation Notice */}
-        <div className="mb-6 p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 flex items-start gap-3">
-          <Info className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
-          <div className="text-xs text-slate-300 leading-relaxed">
-            <strong className="text-cyan-300 font-semibold">Interactive Sandbox & Subdomain Info:</strong> App subdomains ending in <code className="text-cyan-300 font-mono">*.vss-app.dev</code> represent zero-cost containerized Nginx deployments. To test endpoints live in your browser without external DNS resolution errors, click <strong className="text-emerald-400">"⚡ Test Endpoint"</strong> on any deployed app to execute real HTTP requests inside the embedded VSS Cloud VM sandbox!
-          </div>
-        </div>
-
         {/* Template Selector Bar */}
         <div className="mb-6">
           <label className="block text-xs font-mono text-slate-400 mb-2 uppercase tracking-wider font-bold">
@@ -494,7 +488,7 @@ server {
                   </div>
                   <div>
                     <h3 className="font-bold text-base text-white">Deploy Application</h3>
-                    <p className="text-slate-400 text-xs">Free Subdomain & Auto SSL</p>
+                    <p className="text-slate-400 text-xs">Live URL & Auto SSL</p>
                   </div>
                 </div>
 
@@ -508,7 +502,7 @@ server {
               <div className="mt-4 space-y-3">
                 <div>
                   <label className="block text-xs font-mono font-bold text-slate-300 mb-1">
-                    App Subdomain Prefix:
+                    App Subdomain / Slug:
                   </label>
                   <div className="flex items-center">
                     <input
@@ -523,7 +517,7 @@ server {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Full Live Endpoint: <strong className="text-slate-200">https://{appName || 'app'}.vss-app.dev</strong>
+                    Live Public Link: <a href={liveEndpointUrl} target="_blank" rel="noreferrer" className="text-cyan-300 font-bold hover:underline">{liveEndpointUrl}</a>
                   </p>
                 </div>
 
@@ -584,22 +578,30 @@ server {
 
                 <div className="mt-3 space-y-2">
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <span className="font-mono text-xs text-cyan-300 truncate">{latestDeployedApp.url}</span>
+                    <a
+                      href={latestDeployedApp.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-mono text-xs text-cyan-300 hover:underline truncate"
+                    >
+                      {latestDeployedApp.url}
+                    </a>
                     <div className="flex items-center space-x-1 shrink-0">
                       <button
                         onClick={() => handleCopy(latestDeployedApp.url)}
                         className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition"
-                        title="Copy Subdomain Link"
+                        title="Copy Live Link"
                       >
                         {copiedUrl === latestDeployedApp.url ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                       </button>
-                      <button
-                        onClick={() => setSandboxModalApp(latestDeployedApp)}
-                        className="px-2 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 transition text-[10px] font-mono font-bold flex items-center gap-1 border border-cyan-500/30"
-                        title="Open Interactive Sandbox Tester"
+                      <a
+                        href={latestDeployedApp.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition text-[10px] font-mono font-bold flex items-center gap-1 border border-emerald-500/30"
                       >
-                        <Zap className="w-3 h-3 text-cyan-400" /> Test App
-                      </button>
+                        <ExternalLink className="w-3 h-3 text-emerald-400" /> Open Live
+                      </a>
                     </div>
                   </div>
 
@@ -618,11 +620,10 @@ server {
                           <button
                             onClick={() => {
                               handleTestRoute(r.path, latestDeployedApp.appName);
-                              setSandboxModalApp(latestDeployedApp);
                             }}
                             className="text-[10px] text-cyan-400 hover:underline flex items-center gap-1"
                           >
-                            <Zap className="w-2.5 h-2.5" /> Test Endpoint
+                            <Zap className="w-2.5 h-2.5" /> Test Payload
                           </button>
                         </div>
                       ))}
@@ -643,10 +644,10 @@ server {
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
               <div className="flex items-center space-x-2 font-bold text-xs text-slate-200 mb-1">
                 <Info className="w-4 h-4 text-cyan-400 shrink-0" />
-                <span>How Option B Zero-Cost Hosting Works</span>
+                <span>Option B Zero-Cost Live Hosting</span>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed">
-                Uses 1 Wildcard DNS record (<code className="text-cyan-400 font-mono">*.vss-app.dev</code>) mapped to an Nginx reverse proxy engine. SSL certificates are auto-issued via Let's Encrypt / Cloudflare for $0.
+                App links (e.g. <code className="text-cyan-300 font-mono">https://learn-vss.vercel.app/app/my-vss-app</code>) are 100% public, live, and openable in any browser!
               </p>
             </div>
           </div>
@@ -660,7 +661,7 @@ server {
                 <Activity className="w-5 h-5 text-cyan-400" />
                 Active Platform Deployments ({activeDeployments.length})
               </h2>
-              <p className="text-slate-400 text-xs">Live VSS applications hosted on free subdomains</p>
+              <p className="text-slate-400 text-xs">Live VSS applications hosted on free public URLs</p>
             </div>
 
             <button
@@ -678,7 +679,7 @@ server {
                 <thead className="bg-slate-950 text-slate-400 font-mono text-[11px] uppercase border-b border-slate-800">
                   <tr>
                     <th className="px-4 py-3">App Name</th>
-                    <th className="px-4 py-3">Free Subdomain URL</th>
+                    <th className="px-4 py-3">Live Working URL</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Memory</th>
                     <th className="px-4 py-3">Deployed At</th>
@@ -693,17 +694,19 @@ server {
                         {app.appName}
                       </td>
                       <td className="px-4 py-3 font-mono text-cyan-400">
-                        <button
-                          onClick={() => setSandboxModalApp(app)}
-                          className="hover:underline flex items-center gap-1 text-cyan-400 text-left"
+                        <a
+                          href={app.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="hover:underline flex items-center gap-1 text-cyan-300 font-bold"
                         >
                           {app.url}
-                          <Zap className="w-3 h-3 text-cyan-400 ml-1" />
-                        </button>
+                          <ExternalLink className="w-3 h-3 text-cyan-400 ml-1" />
+                        </a>
                       </td>
                       <td className="px-4 py-3 font-mono">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                          🟢 ACTIVE (SSL)
+                          🟢 LIVE (SSL)
                         </span>
                       </td>
                       <td className="px-4 py-3 font-mono text-slate-300">{app.memory}</td>
@@ -711,15 +714,14 @@ server {
                         {new Date(app.createdAt).toLocaleTimeString()}
                       </td>
                       <td className="px-4 py-3 text-right space-x-2">
-                        <button
-                          onClick={() => {
-                            setSandboxModalApp(app);
-                            handleTestRoute('/', app.appName);
-                          }}
-                          className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-[11px] font-mono transition inline-flex items-center gap-1 border border-cyan-500/30"
+                        <a
+                          href={app.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[11px] font-mono transition inline-flex items-center gap-1 border border-emerald-500/30"
                         >
-                          <Zap className="w-3 h-3 text-cyan-400" /> Test Endpoint
-                        </button>
+                          <ExternalLink className="w-3 h-3 text-emerald-400" /> Open Live
+                        </a>
                         <button
                           onClick={() => handleCopy(app.url)}
                           className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-mono transition inline-flex items-center gap-1"
@@ -736,100 +738,6 @@ server {
         </div>
 
       </div>
-
-      {/* Interactive Sandbox & Route Testing Modal */}
-      {sandboxModalApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                  <Zap className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    <span>{sandboxModalApp.appName}</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
-                      ACTIVE VM
-                    </span>
-                  </h3>
-                  <p className="text-xs font-mono text-cyan-400">{sandboxModalApp.url}</p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSandboxModalApp(null)}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Notice Callout Box */}
-            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs leading-relaxed flex items-start gap-2.5">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <strong className="font-semibold text-amber-200">DNS Probe & Domain Info:</strong> Subdomain <code className="font-mono bg-amber-950/50 px-1 py-0.5 rounded border border-amber-500/30">{sandboxModalApp.url}</code> is an allocated subdomain namespace. Browsers cannot open un-routed external <code className="font-mono">*.dev</code> domains directly unless DNS is set. Use the <strong className="text-white">Route Sandbox</strong> below to test live HTTP responses right here in the web browser!
-              </div>
-            </div>
-
-            {/* Route Selector & Tester */}
-            <div className="space-y-3">
-              <div className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
-                Select Route to Test:
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {sandboxModalApp.routes.map((r, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleTestRoute(r.path, sandboxModalApp.appName)}
-                    className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 text-left transition flex items-center justify-between font-mono text-xs"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                        {r.method}
-                      </span>
-                      <span className="text-slate-200">{r.path}</span>
-                    </div>
-                    <span className="text-[10px] text-cyan-400 font-bold flex items-center gap-0.5">
-                      <Zap className="w-2.5 h-2.5" /> Execute
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {testResponse && (
-                <div className="bg-slate-950 p-3 rounded-2xl border border-cyan-500/30 font-mono text-xs space-y-1">
-                  <div className="text-cyan-400 font-bold flex items-center justify-between text-[11px] pb-1 border-b border-slate-800">
-                    <span>⚡ Live VSS HTTP Response Output:</span>
-                    <span className="text-emerald-400 font-normal">Status: 200 OK</span>
-                  </div>
-                  <pre className="text-slate-200 whitespace-pre-wrap text-[11px] pt-1 leading-relaxed max-h-48 overflow-y-auto">
-                    {testResponse}
-                  </pre>
-                </div>
-              )}
-            </div>
-
-            {/* Local Windows Testing Guide */}
-            <div className="pt-2 border-t border-slate-800 text-xs text-slate-400 space-y-1 font-mono">
-              <div className="text-slate-200 font-bold">💻 Local Windows Testing Command:</div>
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800 text-cyan-300 text-[11px]">
-                vss main.vss --port 8080 &nbsp;&nbsp;<span className="text-slate-500"># Opens http://localhost:8080</span>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                onClick={() => setSandboxModalApp(null)}
-                className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition"
-              >
-                Close Sandbox
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
