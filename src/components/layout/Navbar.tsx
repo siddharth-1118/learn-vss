@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, Code, Cpu, Database, Globe, Menu, Rocket, Search, Sparkles, Terminal, X, Zap, BookOpen, Layers, CheckSquare, FileText } from 'lucide-react';
+import { ChevronDown, Code, Cpu, Database, Globe, Menu, Rocket, Search, Sparkles, Terminal, X, Zap, BookOpen, Layers, CheckSquare, FileText, Shield } from 'lucide-react';
 import { GithubIcon } from '@/components/icons/GithubIcon';
 import { SearchModal } from '@/components/search/SearchModal';
 import { VSS_VERSIONS } from '@/lib/vss-data';
@@ -35,6 +35,7 @@ export function Navbar() {
   }, []);
 
   const topicLinks = [
+    { name: 'Capabilities & Python Parity', href: '/capabilities', icon: Shield, desc: 'Complete feature matrix & DevFusion 4.0' },
     { name: 'Programs & Code', href: '/programs', icon: Code, desc: '35+ runnable VSS code examples' },
     { name: 'Data Structures & Algorithms', href: '/dsa', icon: Cpu, desc: 'Trees, Graphs, Sorting in VSS' },
     { name: 'Web Development', href: '/web-development', icon: Globe, desc: 'HTTP servers, REST APIs & Webviews' },
@@ -123,6 +124,17 @@ export function Navbar() {
             >
               <Rocket className="w-3.5 h-3.5" />
               <span>IDE & DEPLOY</span>
+            </Link>
+
+            <Link
+              href="/capabilities"
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                pathname === '/capabilities'
+                  ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-900'
+              }`}
+            >
+              CAPABILITIES
             </Link>
 
             <Link
@@ -256,6 +268,13 @@ export function Navbar() {
               className="block px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-sky-400 text-slate-950"
             >
               LEARN VSS
+            </Link>
+            <Link
+              href="/capabilities"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-900 hover:text-cyan-400"
+            >
+              CAPABILITIES & PYTHON PARITY
             </Link>
             <Link
               href="/language"
