@@ -1,0 +1,258 @@
+note VSS Official Documentation Site Compiler
+
+make chapters becomes [
+    "00_version_history.md",
+    "01_welcome.md",
+    "02_philosophy.md",
+    "03_architecture.md",
+    "04_installation.md",
+    "05_verification.md",
+    "06_input_output.md",
+    "07_first_project.md",
+    "08_variables_constants.md",
+    "09_primitive_types.md",
+    "10_collections.md",
+    "11_arithmetic_operators.md",
+    "12_comparison_logical_operators.md",
+    "13_conditionals.md",
+    "14_loops_iteration.md",
+    "15_tasks_closures.md",
+    "16_error_handling.md",
+    "17_modules_namespaces.md",
+    "18_package_manager.md",
+    "19_web_server.md",
+    "20_sqlite_database.md",
+    "21_http_client.md",
+    "22_filesystem.md",
+    "23_json_handling.md",
+    "24_cryptography.md",
+    "25_system_builtins_input.md",
+    "26_cli_reference.md",
+    "27_web_tutorials.md",
+    "28_compiler_internals.md"
+]
+
+make titles becomes [
+    "0. Version History (V1 - V3)",
+    "1. Welcome to VSS",
+    "2. Philosophy of VSS",
+    "3. Architecture Overview",
+    "4. Installing VSS",
+    "5. Verifying Installation",
+    "6. Input and Output",
+    "7. Creating Your First Project",
+    "8. Variables & Constants",
+    "9. Primitive Types",
+    "10. Collections (Lists & Maps)",
+    "11. Arithmetic Operators",
+    "12. Comparison Operators",
+    "13. Conditional Branching",
+    "14. Loops & Iteration",
+    "15. Tasks & Closures",
+    "16. Error Handling",
+    "17. Modules & Namespaces",
+    "18. Package Manager",
+    "19. Native Web Server",
+    "20. SQLite Database",
+    "21. Native HTTP Client",
+    "22. Filesystem Module",
+    "23. JSON Handling",
+    "24. Cryptography",
+    "25. System Builtins & Input",
+    "26. CLI Command Reference",
+    "27. Real-World Web Projects",
+    "28. Compiler & VM Internals"
+]
+
+task parse_markdown needs md_content
+    grab string
+    make html becomes ""
+    make lines becomes string.split(md_content, "\n")
+    make sz becomes __size(lines)
+    make i becomes 0
+    make in_code_block becomes no
+    make in_list becomes no
+    
+    during i below sz
+        make line becomes string.trim(lines item i)
+        make line_len becomes string.length(line)
+        
+        make is_code_toggle becomes no
+        when line_len at_least 3
+            make start_three becomes string.substring(line, 0, 3)
+            when start_three same_as "```"
+                is_code_toggle becomes yes
+            finish
+        finish
+        
+        when is_code_toggle same_as yes
+            when in_code_block same_as yes
+                html becomes html + "</code></pre>"
+                in_code_block becomes no
+            otherwise
+                html becomes html + "<pre><code>"
+                in_code_block becomes yes
+            finish
+        otherwise
+            when in_code_block same_as yes
+                html becomes html + line + "\n"
+            otherwise
+                make processed becomes no
+                
+                when line_len at_least 2
+                    make start_two becomes string.substring(line, 0, 2)
+                    when start_two same_as "# "
+                        make text becomes string.substring(line, 2, line_len)
+                        html becomes html + "<h1>" + text + "</h1>"
+                        processed becomes yes
+                    finish
+                finish
+                
+                when processed same_as no
+                    when line_len at_least 3
+                        make start_three becomes string.substring(line, 0, 3)
+                        when start_three same_as "## "
+                            make text becomes string.substring(line, 3, line_len)
+                            html becomes html + "<h2>" + text + "</h2>"
+                            processed becomes yes
+                        finish
+                    finish
+                finish
+
+                when processed same_as no
+                    when line_len at_least 4
+                        make start_four becomes string.substring(line, 0, 4)
+                        when start_four same_as "### "
+                            make text becomes string.substring(line, 4, line_len)
+                            html becomes html + "<h3>" + text + "</h3>"
+                            processed becomes yes
+                        finish
+                    finish
+                finish
+                
+                when processed same_as no
+                    when line_len at_least 2
+                        make start_two becomes string.substring(line, 0, 2)
+                        when start_two same_as "- "
+                            make text becomes string.substring(line, 2, line_len)
+                            when in_list same_as no
+                                html becomes html + "<ul>"
+                                in_list becomes yes
+                            finish
+                            html becomes html + "<li>" + text + "</li>"
+                            processed becomes yes
+                        finish
+                    finish
+                finish
+                
+                when processed same_as no
+                    when in_list same_as yes
+                        html becomes html + "</ul>"
+                        in_list becomes no
+                    finish
+                    
+                    when line_len above 0
+                        html becomes html + "<p>" + line + "</p>"
+                    finish
+                finish
+            finish
+        finish
+        i becomes i + 1
+    finish
+    
+    when in_list same_as yes
+        html becomes html + "</ul>"
+    finish
+    
+    send html
+finish
+
+task generate_sidebar needs active_index
+    make sidebar becomes "<div class='sidebar'>"
+    sidebar becomes sidebar + "<div class='logo-container'>"
+    sidebar becomes sidebar + "<div class='logo'>V</div>"
+    sidebar becomes sidebar + "<div class='logo-text'>VSS Book</div>"
+    sidebar becomes sidebar + "</div>"
+    sidebar becomes sidebar + "<nav class='nav-links'>"
+    
+    make len becomes __size(chapters)
+    make i becomes 0
+    during i below len
+        make title becomes titles item i
+        make link_url becomes "chapter_" + i + ".html"
+        
+        sidebar becomes sidebar + "<a href='" + link_url + "' class='nav-link "
+        when i same_as active_index
+            sidebar becomes sidebar + "active"
+        finish
+        sidebar becomes sidebar + "'>" + title + "</a>"
+        i becomes i + 1
+    finish
+    
+    sidebar becomes sidebar + "</nav>"
+    sidebar becomes sidebar + "<div class='version-text'>VSS Language v3.0.0</div></div>"
+    send sidebar
+finish
+
+task wrap_layout needs title, sidebar, content, prev_link, next_link
+    make layout becomes "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + title + " - The VSS Book</title>"
+    layout becomes layout + "<link rel='stylesheet' href='style.css'>"
+    layout becomes layout + "<link rel='icon' type='image/x-icon' href='favicon.ico'>"
+    layout becomes layout + "<link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap' rel='stylesheet'>"
+    layout becomes layout + "</head><body>"
+    layout becomes layout + sidebar
+    layout becomes layout + "<main><div class='content-card'>"
+    layout becomes layout + content
+    
+    note Bottom Navigation
+    layout becomes layout + "<div class='pagination'>"
+    when prev_link not_same_as ""
+        layout becomes layout + "<a href='" + prev_link + "' class='btn-prev'>← Previous</a>"
+    otherwise
+        layout becomes layout + "<div></div>"
+    finish
+    
+    when next_link not_same_as ""
+        layout becomes layout + "<a href='" + next_link + "' class='btn-next'>Next →</a>"
+    otherwise
+        layout becomes layout + "<div></div>"
+    finish
+    layout becomes layout + "</div>"
+    
+    layout becomes layout + "</div></main></body></html>"
+    send layout
+finish
+
+grab filesystem
+filesystem.create_directory("docs")
+
+make len becomes __size(chapters)
+make i becomes 0
+during i below len
+    make filename becomes chapters item i
+    make title becomes titles item i
+    
+    make prev_link becomes ""
+    when i above 0
+        prev_link becomes "chapter_" + (i + -1) + ".html"
+    finish
+    
+    make next_link becomes ""
+    when i below (len + -1)
+        next_link becomes "chapter_" + (i + 1) + ".html"
+    finish
+    
+    say "Compiling " + filename + "..."
+    make md_content becomes filesystem.read_file("chapters/" + filename)
+    make html_body becomes parse_markdown(md_content)
+    make sidebar becomes generate_sidebar(i)
+    make page_html becomes wrap_layout(title, sidebar, html_body, prev_link, next_link)
+    
+    filesystem.write_file("docs/chapter_" + i + ".html", page_html)
+    i becomes i + 1
+finish
+
+make redirect becomes "<!DOCTYPE html><html><head><meta http-equiv='refresh' content='0; url=chapter_0.html'></head></html>"
+filesystem.write_file("docs/index.html", redirect)
+filesystem.write_file("index.html", redirect)
+say "Build complete!"

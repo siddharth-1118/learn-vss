@@ -1,0 +1,30 @@
+note Official VSS Documentation Web Server Application
+grab web
+grab filesystem
+grab json
+grab string
+
+say "===================================================="
+say "   OFFICIAL VSS PROGRAMMING LANGUAGE DOCS SERVER"
+say "===================================================="
+say "Starting native VSS HTTP Web Server on http://localhost:8080..."
+
+web.route("/", { req ->
+    make content becomes filesystem.read_file("docs/chapter_0.html")
+    send content
+})
+
+web.route("/docs", { req ->
+    make content becomes filesystem.read_file("docs/chapter_0.html")
+    send content
+})
+
+web.route("/api/status", { req ->
+    make status_map becomes map []
+    set status_map field "server" becomes "VSS Native HTTP Engine"
+    set status_map field "version" becomes "v3.0.0"
+    set status_map field "status" becomes "online"
+    send json.stringify(status_map)
+})
+
+web.serve(8080)
